@@ -46,10 +46,10 @@ while True:
         pts_list.append({"SSID": ap[0], "BSSID": ap[1], "Channel": ap[2], "RSSI": ap[3]})
 
     # post request to report signal strengths
-    payload = {"SourceName": beacon_name, "Points": payload}
+    payload = {"SourceName": beacon_name, "Points": pts_list}
     r = ''
     while r.find('info updated') < 0:
-        r = urequests.post(pivot_server_url, json=payload)
+        r = urequests.post("http://" + pivot_server_url, json=payload)
         time.sleep(2.5)
 
     # sleep until next cycle
