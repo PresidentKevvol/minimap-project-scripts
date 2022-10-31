@@ -2,15 +2,17 @@ import network
 import time
 import random
 import socket
+import urequests
 
 # info for connecting to the parent network (the building's actual wifi)
 parent_ssid = ""
 parent_password = ""
 # the ip of the pivot server
 pivot_server_ip = "192.168.1.19"
+pivot_server_url = pivot_server_ip + "/p/"
 
 # the name of this beacon
-beacon_name = ''
+beacon_name = 'SBU-01'
 
 # the essid of the access point of this smart beacon unit
 essid = "SBU-01"
@@ -19,7 +21,7 @@ password = str(random.randint(100000003, 999999999))
 
 # setup access point
 ap = network.WLAN(network.AP_IF)
-ap.config(essid=ssid, password=password) 
+ap.config(essid=ssid, password=password)
 ap.active(True)
 
 
@@ -39,28 +41,16 @@ while True:
     accessPoints = wlan.scan()
 
     # send the scanned info to pivot as json
-    payload = ""
-    for ap in accessPoints: 
-        payload += ('{"SSID": "' + ap[0] + '", "Channel": "' + ap[2] + '", "RSSI": "' + ap[3] + '"},')
-    payload = "[" + payload + "]"
-    
-    # setup the socket
-    addr = socket.getaddrinfo(pivot_server_ip, 80)[0][-1]
-    s = socket.socket()
-    s.connect(addr)
-    
-    # post request to report signal strengths
-    payload = '{"SourceName": "' + beacon_name + '", "Points": ' + payload + '}'
-    content = 'POST /p/ HTTP/1.1\r\n' + \
-        'Host: ' + pivot_server_ip + '\r\n' + \
-        'Accept: application/json\r\n' + \
-        'Content-Type: application/json\r\n' + \
-        'Content-Length: ' + str(len(payload)) + '\r\n\r\n' + \
-        payload
+    pts_list = []
+    for ap in accessPoints:
+        pts_list.append({"SSID": ap[0], "BSSID": ap[1], "Channel": ap[2], "RSSI": ap[3]})
 
-    s.send(content.encode('utf-8'))
-    data = s.recv(1000)
-    s.close()
-    
+    # post request to report signal strengths
+    payload = {"SourceName": beacon_name, "Points": payload}
+    r = ''
+    while r.find('info updated') < 0:
+        r = urequests.post(pivot_server_url, json=payload)
+        time.sleep(2.5)
+
     # sleep until next cycle
     time.sleep(10)
