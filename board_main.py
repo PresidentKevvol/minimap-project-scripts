@@ -4,19 +4,22 @@ import random
 import socket
 import urequests
 
+sbu_info = open('sbu.info', 'r')
 # info for connecting to the parent network (the building's actual wifi)
-parent_info = open('parent.info', 'r')
-parent_ssid = parent_info.readline().replace('\r', '').replace('\n', '')
-parent_password = parent_info.readline().replace('\r', '').replace('\n', '')
+#parent_info = open('parent.info', 'r')
+parent_ssid = sbu_info.readline().replace('\r', '').replace('\n', '')
+parent_password = sbu_info.readline().replace('\r', '').replace('\n', '')
+#parent_password = parent_password if len(parent_password) != 0 else None
+
 # the ip of the pivot server
-pivot_server_info = open('pivot_server.info', 'r')
-pivot_server_ip = pivot_server_info.readline().replace('\r', '').replace('\n', '')
+#pivot_server_info = open('pivot_server.info', 'r')
+pivot_server_ip = sbu_info.readline().replace('\r', '').replace('\n', '')
 pivot_server_url = pivot_server_ip + "/p/"
 
 # the name of this beacon and auth password if needed
-self_info = open('self.info', 'r')
-beacon_name = self_info.readline().replace('\r', '').replace('\n', '')
-beacon_password = self_info.readline().replace('\r', '').replace('\n', '')
+#self_info = open('self.info', 'r')
+beacon_name = sbu_info.readline().replace('\r', '').replace('\n', '')
+#beacon_password = self_info.readline().replace('\r', '').replace('\n', '')
 
 print("Info files Read.")
 
@@ -40,7 +43,10 @@ wlan.active(True)
 while True:
     # check if connection to parent stable
     while not wlan.isconnected():
-        wlan.connect(parent_ssid, parent_password)
+        if len(parent_password) > 0:
+            wlan.connect(parent_ssid, parent_password)
+        else:
+            wlan.connect(parent_ssid, security=0)
         print("Waiting for connection...")
         while not wlan.isconnected():
             time.sleep(1)
