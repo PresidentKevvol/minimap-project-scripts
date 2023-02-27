@@ -60,4 +60,4 @@ def extract_readings_stats(all_current_readings, missing_fill=-101):
         covariant_matrices[name] = cov
         mean_vectors[name] = mean
         
-    return covariant_matrices, mean_vectors
+    return covariant_matrices, mean_vectors, matrix_indices
